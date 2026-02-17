@@ -6,19 +6,33 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// --- CONFIGURACIÓN PARA RAILWAY ---
+// --- LÓGICA DE RUTAS DINÁMICA ---
 
-// Definimos la ruta absoluta a la carpeta frontend que está un nivel arriba
-const frontendPath = path.join(__dirname, '..', 'frontend');
+// Intentamos encontrar la carpeta frontend de dos formas
+const pathsAProbar = [
+    path.join(__dirname, '..', 'frontend'), // Local (subiendo un nivel)
+    path.join(process.cwd(), 'frontend'),   // Railway (desde la raíz de ejecución)
+    path.join(__dirname, 'frontend')        // Por si acaso
+];
 
-// 1. Servir archivos estáticos (CSS, JS, Imágenes)
+let frontendPath = pathsAProbar[0];
+
+// Verificamos cuál de las rutas existe (esto se imprime en los logs de Railway)
+const fs = require('fs');
+pathsAProbar.forEach(p => {
+    if (fs.existsSync(p)) {
+        frontendPath = p;
+        console.log("✅ Carpeta frontend encontrada en:", p);
+    }
+});
+
+// Servir archivos estáticos
 app.use(express.static(frontendPath));
 
-// 2. Rutas de la API (Tus rutas actuales)
+// Rutas de tu API (Mantén las tuyas igual)
 app.use('/api/productos', require('./routes/productos'));
 app.use('/api/ubicaciones', require('./routes/ubicaciones'));
 app.use('/api/categorias', require('./routes/categorias'));
@@ -27,18 +41,16 @@ app.use('/api/movimientos', require('./routes/movimientos'));
 app.use('/api/reportes', require('./routes/reportes'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
-// 3. Ruta comodín para el Frontend
-// IMPORTANTE: Esto debe ir después de todas las rutas /api
+// Ruta para el Frontend
 app.get('*', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'), (err) => {
-        if (err) {
-            console.error("Error enviando index.html:", err);
-            res.status(500).send("Error al cargar el frontend. Revisa la ruta: " + frontendPath);
-        }
-    });
+    const indexPath = path.join(frontendPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send(`Error: No se encontró index.html en ${frontendPath}. Verifica que la carpeta frontend se haya subido a GitHub.`);
+    }
 });
 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor en puerto ${PORT}`);
-    console.log(`📂 Frontend path: ${frontendPath}`);
 });
