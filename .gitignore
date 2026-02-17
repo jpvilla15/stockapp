@@ -1,0 +1,17 @@
+# Dependencias: No se suben porque Railway las instala solo
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Seguridad: No subir tus contraseñas o variables locales
+.env
+backend/.env
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+npm-debug.log*
+
+# Aseguramos que las carpetas de código SI se suban
+!backend/
+!frontend/
