@@ -23,7 +23,9 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-
+app.get("/", (req, res) => {
+  res.send("StockApp backend funcionando 🚀");
+});
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
