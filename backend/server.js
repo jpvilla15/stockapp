@@ -5,10 +5,6 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-//const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
 
 // Middlewares
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
