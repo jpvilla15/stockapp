@@ -3,7 +3,10 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Servidor en puerto ${PORT}`);
+});
 
 // Middlewares
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
@@ -25,6 +28,9 @@ app.get('/api/health', (req, res) => {
 });
 app.get("/", (req, res) => {
   res.send("StockApp backend funcionando 🚀");
+});
+app.get("/", (req, res) => {
+  res.send("OK");
 });
 // Error handler
 app.use((err, req, res, next) => {
