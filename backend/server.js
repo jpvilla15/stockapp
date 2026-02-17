@@ -1,38 +1,28 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs'); // Añadido para verificar existencia de archivos
 require('dotenv').config();
 
 const app = express();
+// Railway asigna automáticamente un puerto, 8080 es un buen respaldo
 const PORT = process.env.PORT || 8080;
 
+// Middlewares básicos
 app.use(cors());
 app.use(express.json());
 
-// --- LÓGICA DE RUTAS DINÁMICA ---
+/**
+ * CONFIGURACIÓN DE RUTAS ESTÁTICAS
+ * En Railway, el proceso suele ejecutarse desde la raíz del proyecto.
+ * 'process.cwd()' nos da la raíz donde están 'backend' y 'frontend'.
+ */
+const frontendPath = path.join(process.cwd(), 'frontend');
 
-// Intentamos encontrar la carpeta frontend de dos formas
-const pathsAProbar = [
-    path.join(__dirname, '..', 'frontend'), // Local (subiendo un nivel)
-    path.join(process.cwd(), 'frontend'),   // Railway (desde la raíz de ejecución)
-    path.join(__dirname, 'frontend')        // Por si acaso
-];
-
-let frontendPath = pathsAProbar[0];
-
-// Verificamos cuál de las rutas existe (esto se imprime en los logs de Railway)
-const fs = require('fs');
-pathsAProbar.forEach(p => {
-    if (fs.existsSync(p)) {
-        frontendPath = p;
-        console.log("✅ Carpeta frontend encontrada en:", p);
-    }
-});
-
-// Servir archivos estáticos
+// 1. Servir archivos estáticos (js, css, imágenes)
 app.use(express.static(frontendPath));
 
-// Rutas de tu API (Mantén las tuyas igual)
+// 2. Rutas de la API
 app.use('/api/productos', require('./routes/productos'));
 app.use('/api/ubicaciones', require('./routes/ubicaciones'));
 app.use('/api/categorias', require('./routes/categorias'));
@@ -41,16 +31,24 @@ app.use('/api/movimientos', require('./routes/movimientos'));
 app.use('/api/reportes', require('./routes/reportes'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
-// Ruta para el Frontend
+// Health check para Railway
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// 3. Ruta comodín para servir el Frontend (SPA)
+// IMPORTANTE: Debe ir después de todas las rutas de la API
 app.get('*', (req, res) => {
     const indexPath = path.join(frontendPath, 'index.html');
+    
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        res.status(404).send(`Error: No se encontró index.html en ${frontendPath}. Verifica que la carpeta frontend se haya subido a GitHub.`);
+        // Mensaje de diagnóstico si algo falla en el despliegue
+        res.status(404).send(`Error: No se encontró el frontend en ${frontendPath}. Verifica la estructura en GitHub.`);
     }
 });
 
+// Inicio del servidor
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor en puerto ${PORT}`);
+    console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+    console.log(`📂 Sirviendo frontend desde: ${frontendPath}`);
 });
