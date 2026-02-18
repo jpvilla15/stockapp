@@ -4,7 +4,7 @@
   "description": "API para gestión de stock por ubicación",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node backend/server.js",
     "dev": "nodemon server.js",
     "init-db": "node scripts/initDb.js"
   },
