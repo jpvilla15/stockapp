@@ -7,13 +7,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Esta parte es vital para Railway:
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
-
 pool.on('error', (err) => {
   console.error('Error inesperado en el cliente de PostgreSQL', err);
 });
